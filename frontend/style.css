@@ -1,0 +1,158 @@
+/* ---------- Global Reset ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ---------- Body ---------- */
+body {
+  background: url("assets/background.png") no-repeat center center fixed;
+  background-size: cover;
+  font-family: "Segoe UI", sans-serif;
+  color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 20, 0.75);
+  z-index: -1;
+}
+
+/* ---------- Header ---------- */
+.header {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  color: #00ffff;
+  text-shadow: 0 0 20px #00ffff;
+}
+
+.header p {
+  color: #aaf2ff;
+  font-size: 1rem;
+  margin-top: 6px;
+}
+
+/* ---------- Main Container ---------- */
+.main-container {
+  margin-top: 40px;
+  width: 90%;
+  max-width: 1100px;
+  text-align: center;
+}
+
+/* ---------- Input Section ---------- */
+.input-section {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+textarea {
+  width: 45%;
+  min-width: 340px;
+  height: 300px;
+  background: rgba(10, 20, 30, 0.85);
+  color: #fff;
+  border: 1px solid #00ffff;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 1rem;
+  resize: vertical;
+  outline: none;
+  transition: 0.3s;
+}
+
+textarea:focus {
+  box-shadow: 0 0 20px #00ffff;
+}
+
+/* ---------- Buttons ---------- */
+.glow-btn {
+  margin-top: 30px;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #0078ff, #00ffe0);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 25px #00ffe0;
+  transition: 0.3s;
+}
+
+.glow-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 35px #00ffff;
+}
+
+.glow-btn.secondary {
+  background: linear-gradient(90deg, #7209b7, #f72585);
+  box-shadow: 0 0 20px #f72585;
+}
+
+/* ---------- Result Section ---------- */
+.result {
+  margin-top: 40px;
+  background: rgba(0, 0, 30, 0.7);
+  padding: 30px 60px;
+  border-radius: 15px;
+  text-align: center;
+  border: 1px solid #00ffff;
+  box-shadow: 0 0 20px #00ffff;
+}
+
+.result h2 {
+  color: #00ffff;
+  text-shadow: 0 0 15px #00ffff;
+}
+
+.percentage {
+  font-size: 3rem;
+  color: #00ffe0;
+  font-weight: 700;
+  text-shadow: 0 0 25px #00ffe0;
+  margin-top: 10px;
+}
+
+/* ---------- Detailed Section ---------- */
+.details-section {
+  width: 90%;
+  max-width: 900px;
+  margin: 60px auto 80px;
+  padding: 40px;
+  border-radius: 15px;
+  border: 1px solid #00ffff;
+  background: rgba(0, 0, 30, 0.8);
+  box-shadow: 0 0 25px #00ffff;
+  text-align: center;
+}
+
+canvas {
+  margin-top: 25px;
+}
+
+/* ---------- Footer ---------- */
+footer {
+  color: #88ddee;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ---------- Hidden ---------- */
+.hidden {
+  display: none;
+}

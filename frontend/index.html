@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Clone Detector</title>
+
+  <!-- ✅ Fixed CSS path -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js for graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Dark overlay for background effect -->
+  <div class="overlay"></div>
+
+  <header class="header">
+    <h1>🧠 CODE CLONE DETECTOR</h1>
+    <Br>
+  </header>
+
+  <main class="main-container">
+    <div class="input-section">
+      <textarea id="code1" placeholder="Paste your first code snippet here..."></textarea>
+      <textarea id="code2" placeholder="Paste your second code snippet here..."></textarea>
+    </div>
+
+    <button id="checkBtn" class="glow-btn">🚀 Check Cloning Percentage</button>
+
+    <div id="result" class="result hidden">
+      <h2>🔍 Overall Cloning Percentage</h2>
+      <div id="percentage" class="percentage">0%</div>
+      <button id="detailsBtn" class="glow-btn secondary hidden">View Detailed Analysis</button>
+    </div>
+
+    <section id="detailsSection" class="hidden details-section">
+  <h2>📊 Detailed Clone Type Analysis</h2>
+  <canvas id="similarityChart"></canvas>
+
+  <h2 style="margin-top: 40px;">⏱️ Execution Time for Each Technique</h2>
+  <canvas id="timeChart"></canvas>
+</section>
+
+  </main>
+
+  <footer>
+    © 2025  Minor Project
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
