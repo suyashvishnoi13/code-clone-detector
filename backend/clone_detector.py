@@ -5,22 +5,18 @@ import logging
 from dataclasses import dataclass, field
 from typing import List, Tuple, Dict, Optional, Any
 
-# ---------------------------------------------------------------------------
 # Optional BERT / CodeBERT imports
-# ---------------------------------------------------------------------------
 HAS_BERT = True
 try:
     import torch
     from transformers import RobertaTokenizer, RobertaModel
-except Exception:  # pragma: no cover - runtime dependency
+except Exception:  
     HAS_BERT = False
-    torch = None  # type: ignore
-    RobertaTokenizer = None  # type: ignore
-    RobertaModel = None  # type: ignore
+    torch = None  
+    RobertaTokenizer = None  
+    RobertaModel = None  
 
-# ---------------------------------------------------------------------------
 # Logging configuration
-# ---------------------------------------------------------------------------
 
 logger = logging.getLogger(__name__)
 if not logger.handlers:
@@ -34,30 +30,22 @@ if not logger.handlers:
     logger.setLevel(logging.INFO)
 
 
-# ---------------------------------------------------------------------------
 # Utility helpers
-# ---------------------------------------------------------------------------
 
 COMMENT_SINGLE_LINE_CPP = re.compile(r"//.*")
 COMMENT_MULTI_LINE_CPP = re.compile(r"/\*[\s\S]*?\*/", re.MULTILINE)
 
 
 def strip_comments(text: str) -> str:
-    """
-    Remove C / C++ style comments from source code.
-    This is intentionally conservative: if the input code
-    is from another language it still behaves reasonably.
-    """
+    #Remove C / C++ style comments from source code.
+    
     without_single = COMMENT_SINGLE_LINE_CPP.sub("", text)
     without_multi = COMMENT_MULTI_LINE_CPP.sub("", without_single)
     return without_multi
 
 
 def normalize_whitespace(text: str) -> str:
-    """
-    Collapse multiple spaces/tabs into single spaces and
-    strip trailing whitespace line by line.
-    """
+    # for type 1
     lines = []
     for line in text.splitlines():
         line = re.sub(r"\s+", " ", line).strip()
@@ -71,19 +59,15 @@ TOKEN_RE = re.compile(r"[A-Za-z_]\w*|\d+|[^\s]")
 
 
 def tokenize(text: str) -> List[str]:
-    """
-    Very simple tokenizer suitable for most C-like languages.
-    """
+    
+    # help in type2
     return TOKEN_RE.findall(text)
 
 
 def extract_keywords_structure(text: str) -> str:
-    """
-    Extract a rough structural representation:
-    - control-flow keywords
-    - number of braces / parentheses
-    Intended for type-3 structural similarity.
-    """
+    
+    # extract keywords
+
     lowered = text.lower()
     keywords = re.findall(
         r"\b(if|else|for|while|switch|case|class|def|function|try|catch|return)\b",
@@ -119,16 +103,11 @@ def language_hint_from_extension(filename: Optional[str]) -> Optional[str]:
     return None
 
 
-# ---------------------------------------------------------------------------
 # Data models
-# ---------------------------------------------------------------------------
 
 @dataclass
 class CodeSnippet:
-    """
-    Represents a single code snippet and lazily stores several
-    derived views (cleaned, tokenized, structural).
-    """
+    
     raw: str
     filename: Optional[str] = None
     language: Optional[str] = None
@@ -141,7 +120,7 @@ class CodeSnippet:
         if self.language is None:
             self.language = language_hint_from_extension(self.filename)
 
-    # --- Lazy computations -------------------------------------------------
+    # Lazy computations 
 
     def get_cleaned(self) -> str:
         if self.cleaned is None:
@@ -149,6 +128,8 @@ class CodeSnippet:
             self.cleaned = normalize_whitespace(no_comments)
             logger.debug("Computed cleaned code (%d chars)", len(self.cleaned))
         return self.cleaned
+
+    # same function as that of type 1 and 2
 
     def get_tokens(self) -> List[str]:
         if self.tokens is None:
@@ -168,20 +149,14 @@ class CodeSnippet:
 
 @dataclass
 class TechniqueResult:
-    """
-    Holds the similarity score and time taken for a
-    specific clone-detection technique.
-    """
+    # for calculating similarity percentage
     score: float
     elapsed: float
 
 
 @dataclass
 class CloneReport:
-    """
-    Aggregated result for a pair of code snippets using
-    all enabled techniques.
-    """
+    
     type1: TechniqueResult
     type2: TechniqueResult
     type3: TechniqueResult
@@ -189,9 +164,9 @@ class CloneReport:
     weights: Dict[str, float]
 
     def overall_score(self) -> float:
-        """
-        Compute a weighted average of all technique scores.
-        """
+        
+        # Compute a weighted average of all technique scores.
+        
         weighted_sum = (
             self.type1.score * self.weights.get("type1", 1.0)
             + self.type2.score * self.weights.get("type2", 1.0)
@@ -209,10 +184,7 @@ class CloneReport:
         return round(weighted_sum / total_weight, 2)
 
     def to_legacy_dict(self) -> Dict[str, Any]:
-        """
-        Convert to the legacy dictionary format expected by the
-        existing frontend / server code.
-        """
+      
         return {
             "type1": round(self.type1.score, 2),
             "type2": round(self.type2.score, 2),
@@ -228,16 +200,10 @@ class CloneReport:
         }
 
 
-# ---------------------------------------------------------------------------
 # Similarity strategies
-# ---------------------------------------------------------------------------
 
 class SimilarityStrategy:
-    """
-    Base class for all similarity / clone-detection strategies.
-    Each strategy must implement `run(a, b)` and return a TechniqueResult.
-    """
-
+   
     name: str = "base"
 
     def run(self, a: CodeSnippet, b: CodeSnippet) -> TechniqueResult:
@@ -245,12 +211,9 @@ class SimilarityStrategy:
 
 
 class Type1TextualStrategy(SimilarityStrategy):
-    """
-    Type-1: Textual similarity after comment removal and basic
-    whitespace normalization. Roughly corresponds to classical
-    string-based clone detection (Level-1 clones).
-    """
-
+    
+    # Type-1: Textual similarity after comment removal and basic
+    
     name = "type1"
 
     def run(self, a: CodeSnippet, b: CodeSnippet) -> TechniqueResult:
@@ -264,12 +227,8 @@ class Type1TextualStrategy(SimilarityStrategy):
 
 
 class Type2TokenStrategy(SimilarityStrategy):
-    """
-    Type-2: Token-based similarity with identifier normalization.
-    All identifiers are replaced with abstract placeholders VAR1, VAR2, ...
-    which makes the technique robust to variable renaming while still 
-    capturing the overall token sequence.
-    """
+    # Type-2: Token-based similarity with identifier normalization.
+    
 
     name = "type2"
 
@@ -305,12 +264,12 @@ class Type2TokenStrategy(SimilarityStrategy):
 
 
 class Type3StructuralStrategy(SimilarityStrategy):
-    """
-    Type-3: Structural similarity based on the control-flow keywords
-    and brace / parenthesis patterns. This technique is intentionally
-    language-agnostic and provides a high-level view of the program
-    structure.
-    """
+        #Type-3: Structural similarity based on the control-flow keywords
+    
+    # and brace / parenthesis patterns. This technique is intentionally
+    # language-agnostic and provides a high-level view of the program
+    # structure.
+    
 
     name = "type3"
 
@@ -325,8 +284,7 @@ class Type3StructuralStrategy(SimilarityStrategy):
         return TechniqueResult(score=round(score, 2), elapsed=end - start)
 
 
-# ---- Type-4: BERT / CodeBERT semantic similarity -------------------------
-
+#  Type-4: BERT / CodeBERT semantic similarity
 _BERT_TOKENIZER = None
 _BERT_MODEL = None
 
@@ -349,12 +307,9 @@ def _load_bert_models():
 
 
 class Type4SemanticBERTStrategy(SimilarityStrategy):
-    """
-    Type-4: Semantic similarity based on CodeBERT embeddings.
-    If the BERT libraries or model are not available, this strategy
-    gracefully falls back to a slightly down-weighted Type-2 score.
-    """
-
+    
+    # Type-4: Semantic similarity based on CodeBERT embeddings.
+    
     name = "type4"
 
     def __init__(self, fallback_strategy: Optional[Type2TokenStrategy] = None):
@@ -400,17 +355,11 @@ class Type4SemanticBERTStrategy(SimilarityStrategy):
         return TechniqueResult(score=round(score, 2), elapsed=end - start)
 
 
-# ---------------------------------------------------------------------------
 # Clone detector core
-# ---------------------------------------------------------------------------
 
 @dataclass
 class CloneDetectorConfig:
-    """
-    Configuration options for the CloneDetector.
-    You can tune the relative contribution of each technique
-    via the weights dictionary.
-    """
+    
     weights: Dict[str, float] = field(
         default_factory=lambda: {
             "type1": 1.0,
@@ -426,10 +375,7 @@ class CloneDetectorConfig:
 
 
 class CloneDetector:
-    """
-    High-level orchestrator that runs multiple clone-detection techniques
-    on a pair of code snippets and aggregates the results into a report.
-    """
+    
 
     def __init__(self, config: Optional[CloneDetectorConfig] = None) -> None:
         self.config = config or CloneDetectorConfig()
@@ -451,7 +397,7 @@ class CloneDetector:
             else None
         )
 
-    # Public API ------------------------------------------------------------
+    # Public API 
 
     def analyze(
         self,
@@ -460,10 +406,7 @@ class CloneDetector:
         filename1: Optional[str] = None,
         filename2: Optional[str] = None,
     ) -> CloneReport:
-        """
-        Perform full clone analysis using all enabled techniques and
-        return a structured CloneReport.
-        """
+        
         snippet1 = CodeSnippet(raw=code1, filename=filename1)
         snippet2 = CodeSnippet(raw=code2, filename=filename2)
 
@@ -507,21 +450,14 @@ class CloneDetector:
         return report
 
 
-# ---------------------------------------------------------------------------
-# Backwards-compatible functional API
-# ---------------------------------------------------------------------------
 
 # Create a single global detector instance used by detect_clones().
+
 _GLOBAL_DETECTOR = CloneDetector()
 
 
 def detect_clones(code1: str, code2: str) -> Dict[str, Any]:
-    """
-    Backwards-compatible function preserved for the existing HTTP server.
-    Takes two raw code strings and returns a dictionary with the fields:
-      - type1, type2, type3, type4 (similarity scores)
-      - overall                (weighted average)
-      - times.{type}           (execution times)
-    """
+    
+
     report = _GLOBAL_DETECTOR.analyze(code1, code2)
     return report.to_legacy_dict()
